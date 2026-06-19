@@ -1,0 +1,689 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Thiết Kế Sách Điện Tử - Sophia</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0F172A',
+                            950: '#070A11',
+                            800: '#1E293B',
+                        },
+                        gold: {
+                            100: '#F6E0B5',
+                            200: '#E6C587',
+                            300: '#C5A880',
+                            400: '#A1855B',
+                        },
+                        ivory: {
+                            50: '#FDFBF7',
+                            100: '#FAF6F0',
+                            200: '#F4ECE1'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'Playfair Display', 'serif'],
+                        sans: ['Montserrat', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CSS Rule cho chế độ xem trước chuẩn trang giấy A4 */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+            page-break-after: always;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive scaling cho màn hình nhỏ hơn chiều rộng A4 */
+        @media (max-width: 900px) {
+            .book-container {
+                transform: scale(0.85);
+                transform-origin: top center;
+            }
+        }
+        @media (max-width: 768px) {
+            .book-container {
+                transform: scale(0.65);
+                transform-origin: top center;
+            }
+        }
+        @media (max-width: 480px) {
+            .book-container {
+                transform: scale(0.42);
+                transform-origin: top center;
+            }
+        }
+
+        /* Định dạng tối ưu khi in ra file PDF */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-area {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+            .a4-page {
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: var(--page-bg) !important;
+            }
+        }
+
+        /* Texture sọc mờ cho trang bìa giống ảnh mẫu */
+        .cover-stripes {
+            background-image: repeating-linear-gradient(45deg, rgba(197, 168, 128, 0.03) 0px, rgba(197, 168, 128, 0.03) 2px, transparent 2px, transparent 10px);
+        }
+
+        /* Chỉnh sửa trực tiếp không có viền xấu */
+        [contenteditable="true"]:focus {
+            outline: 2px dashed #C5A880;
+            padding: 2px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-navy-950 text-stone-200 min-h-screen flex flex-col md:flex-row font-sans">
+
+    <!-- CỘT TRÁI: BỘ ĐIỀU KHIỂN THIẾT KẾ (NO-PRINT) -->
+    <aside class="no-print w-full md:w-80 bg-navy-900 border-b md:border-b-0 md:border-r border-gold-300/10 p-6 flex flex-col justify-between space-y-6 md:sticky md:top-0 md:h-screen overflow-y-auto z-50">
+        <div class="space-y-6">
+            <!-- Header Logo -->
+            <div class="border-b border-gold-300/10 pb-4">
+                <span class="text-sm font-serif font-bold tracking-[0.2em] text-gold-200 uppercase">THE ARCHETYPE OF</span>
+                <h1 class="text-xs font-sans tracking-[0.3em] text-stone-400 uppercase">ELEGANCE STUDIO</h1>
+            </div>
+
+            <!-- Điều khiển hiển thị -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold-300">Tùy biến mỹ thuật</h3>
+                
+                <!-- Chọn màu nền giấy -->
+                <div>
+                    <label class="text-xs text-stone-400 block mb-2">Chủ đề màu giấy:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setTheme('ivory')" class="bg-ivory-100 hover:bg-ivory-200 text-navy-950 text-[10px] font-semibold py-2 rounded border border-gold-300/30 transition-all">Kem Cổ Điển</button>
+                        <button onclick="setTheme('charcoal')" class="bg-stone-900 hover:bg-stone-800 text-stone-200 text-[10px] font-semibold py-2 rounded border border-gold-300/20 transition-all">Đen Than</button>
+                        <button onclick="setTheme('white')" class="bg-white hover:bg-stone-100 text-stone-900 text-[10px] font-semibold py-2 rounded border border-stone-300 transition-all">Trắng In</button>
+                    </div>
+                </div>
+
+                <!-- Chọn font chữ -->
+                <div>
+                    <label class="text-xs text-stone-400 block mb-2">Font chữ nội dung:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setFont('serif')" class="bg-navy-800 hover:bg-navy-700 text-gold-200 text-xs font-serif py-2 rounded border border-gold-300/20 transition-all">Serif Quý Phái</button>
+                        <button onclick="setFont('sans')" class="bg-navy-800 hover:bg-navy-700 text-gold-200 text-xs font-sans py-2 rounded border border-gold-300/20 transition-all">Sans Hiện Đại</button>
+                    </div>
+                </div>
+
+                <!-- Chỉnh kích thước chữ -->
+                <div>
+                    <label class="text-xs text-stone-400 block mb-2">Cỡ chữ nội dung:</label>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="changeFontSize(-1)" class="w-10 py-1.5 bg-navy-800 hover:bg-navy-700 border border-gold-300/20 rounded text-sm">-</button>
+                        <span id="font-size-indicator" class="text-xs font-mono w-full text-center">14px</span>
+                        <button onclick="changeFontSize(1)" class="w-10 py-1.5 bg-navy-800 hover:bg-navy-700 border border-gold-300/20 rounded text-sm">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chế độ biên tập nội dung -->
+            <div class="space-y-4 border-t border-gold-300/10 pt-4">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold-300">Biên tập trực tiếp</h3>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-stone-400">Cho phép sửa chữ trực tiếp:</span>
+                    <button id="edit-toggle" onclick="toggleEditMode()" class="px-3 py-1.5 bg-red-950/40 border border-red-500/30 text-red-300 text-[10px] font-bold tracking-wider rounded uppercase transition-all">
+                        Tắt biên tập
+                    </button>
+                </div>
+                <p class="text-[10px] text-stone-500 italic leading-relaxed">Khi bật biên tập, bạn có thể nhấp đúp trực tiếp vào văn bản trang bên phải để sửa đổi/điền thông tin theo ý muốn trước khi in.</p>
+            </div>
+        </div>
+
+        <!-- Các nút tác vụ chính -->
+        <div class="space-y-3 pt-4 border-t border-gold-300/10">
+            <button onclick="window.print()" class="w-full bg-gradient-to-r from-gold-300 to-gold-200 hover:from-gold-200 hover:to-gold-100 text-navy-950 font-bold tracking-widest text-xs py-3 rounded-lg shadow-lg active:scale-[0.98] transition-all uppercase flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Xuất bản file PDF</span>
+            </button>
+            <p class="text-[10px] text-stone-400 text-center leading-relaxed">Mẹo: Chọn định dạng <strong class="text-gold-200">"Save as PDF"</strong>, khổ giấy <strong class="text-gold-200">A4</strong>, bật <strong class="text-gold-200">Background Graphics</strong> khi in để giữ trọn vẹn màu sắc thiết kế.</p>
+        </div>
+    </aside>
+
+    <!-- CỘT PHẢI: TRÌNH HIỂN THỊ SÁCH TRỰC QUAN (CHUẨN A4) -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto flex justify-center items-start print-area bg-navy-950">
+        <div class="book-container space-y-8 print-area">
+
+            <!-- PAGE 1: TRANG BÌA (Cover Page) -->
+            <div class="a4-page bg-navy-900 border-[10px] border-double border-gold-300/30 cover-stripes text-stone-200" style="--page-bg: #0F172A;" data-theme="dark">
+                <!-- Đường viền mạ vàng trang trí -->
+                <div class="absolute inset-4 border border-gold-300/20 pointer-events-none"></div>
+                
+                <!-- Bố cục trang bìa -->
+                <div class="h-full flex flex-col justify-between py-12 px-8 relative z-10">
+                    <!-- Header -->
+                    <div class="text-center space-y-2">
+                        <p class="text-[10px] tracking-[0.4em] text-gold-300 uppercase font-bold">Ấn Bản Tri Thức Đặc Biệt</p>
+                        <div class="w-12 h-[1px] bg-gold-300/40 mx-auto"></div>
+                    </div>
+
+                    <!-- Tiêu đề trung tâm -->
+                    <div class="text-center space-y-6 my-auto">
+                        <span class="text-xs tracking-[0.3em] text-stone-400 uppercase font-sans">The Archetype of Elegance</span>
+                        <h1 class="text-4xl md:text-5xl font-serif text-white font-bold leading-tight tracking-wide uppercase" contenteditable="true" id="book-title">
+                            Từ Bóng Tối<br>Đến Bản Thể<br><span class="text-gold-200 italic font-normal">Kiêu Hãnh</span>
+                        </h1>
+                        <div class="w-24 h-[1.5px] bg-gold-200 mx-auto"></div>
+                        <p class="text-xs tracking-widest text-gold-300/80 italic font-serif" contenteditable="true">Bóc trần quy luật tâm lý - Thiết lập nền tảng độc lập tự chủ</p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="text-center space-y-3">
+                        <p class="text-xs tracking-[0.3em] text-gold-200 font-serif" contenteditable="true">TÁC GIẢ: SOPHIA</p>
+                        <p class="text-[9px] tracking-widest text-stone-500 uppercase font-sans">Bản quyền © 2026 • Độc quyền lưu hành</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 2: TRANG ĐỀ TỪ (Dedication Page) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="text-xs tracking-[0.2em] text-gold-400 font-serif">MỞ ĐẦU TÁC PHẨM</div>
+                    
+                    <div class="my-auto space-y-8 text-center px-6">
+                        <i class="fa-solid fa-quote-left text-3xl text-gold-300/40"></i>
+                        <blockquote class="text-xl md:text-2xl font-serif italic leading-relaxed text-navy-900 font-light" contenteditable="true">
+                            "Một người tử tế vì họ không có khả năng làm điều ác, đó không phải là sự lương thiện — đó là sự bất lực. Khi bạn không có nanh vuốt, không có khả năng phản kháng, không có một ranh giới thép, thì sự dịu dàng của bạn chỉ là một món hàng miễn phí."
+                        </blockquote>
+                        <div class="w-12 h-[1px] bg-gold-300 mx-auto"></div>
+                        <cite class="text-xs tracking-[0.2em] text-gold-400 uppercase font-sans not-italic block">— Sophia</cite>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 2</div>
+                </div>
+            </div>
+
+            <!-- PAGE 3: TRANG MỤC LỤC (Table of Contents) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="space-y-4">
+                        <h2 class="text-2xl font-serif tracking-widest uppercase text-navy-900 text-center">Mục Lục</h2>
+                        <div class="w-16 h-[1px] bg-gold-300 mx-auto"></div>
+                    </div>
+
+                    <!-- Danh sách chương mục tinh tế -->
+                    <div class="my-auto space-y-6 font-serif max-w-md mx-auto w-full text-sm">
+                        <div class="flex justify-between items-baseline border-b border-dashed border-stone-300 pb-1">
+                            <span>Chương I: Đại phẫu tâm lý — Khai phá bản thể bóng tối</span>
+                            <span class="font-sans text-xs text-gold-400">Trang 04</span>
+                        </div>
+                        <div class="flex justify-between items-baseline border-b border-dashed border-stone-300 pb-1">
+                            <span>Chương II: Triết lý dòng tiền lý trí — Kiến tạo tự chủ</span>
+                            <span class="font-sans text-xs text-gold-400">Trang 06</span>
+                        </div>
+                        <div class="flex justify-between items-baseline border-b border-dashed border-stone-300 pb-1">
+                            <span>Chương III: Trí tuệ bậc cao — Tự động hóa tư duy</span>
+                            <span class="font-sans text-xs text-gold-400">Trang 08</span>
+                        </div>
+                        <div class="flex justify-between items-baseline border-b border-dashed border-stone-300 pb-1">
+                            <span>Chương IV: Kết giao tinh hoa — Thế lực tĩnh lặng</span>
+                            <span class="font-sans text-xs text-gold-400">Trang 10</span>
+                        </div>
+                        <div class="flex justify-between items-baseline border-b border-dashed border-stone-300 pb-1">
+                            <span>Chương V: Thẩm mỹ kiêu hãnh — Khẳng định chủ quyền</span>
+                            <span class="font-sans text-xs text-gold-400">Trang 12</span>
+                        </div>
+                        <div class="flex justify-between items-baseline border-b border-dashed border-stone-300 pb-1">
+                            <span>Lời kết: Sự tái sinh của Phượng hoàng</span>
+                            <span class="font-sans text-xs text-gold-400">Trang 14</span>
+                        </div>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 3</div>
+                </div>
+            </div>
+
+            <!-- PAGE 4: CHƯƠNG 1 (MẶT NẠ VÔ HẠI) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <!-- Header trang sách -->
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG I: ĐẠI PHẪU TÂM LÝ</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h3 class="text-xl font-serif font-bold text-navy-900 tracking-wide text-left mb-4">Mặt nạ "Nữ tính vô hại" và cái bẫy sinh tồn</h3>
+                        <p>
+                            Xã hội đã tiêm nhiễm vào bạn định nghĩa lệch lạc về sự dịu dàng. Ngay từ nhỏ, người ta ca tụng những cô gái biết nhường nhịn, biến sự nhún nhường thành tiêu chuẩn vàng của đức hạnh. Bạn mỉm cười khi lòng dậy sóng, nói "đồng ý" khi cơ thể gào thét đòi từ chối. Bạn tự hào mình sống tình cảm, dĩ hòa vi quý.
+                        </p>
+                        <p>
+                            Nhưng đằng sau sự ngoan ngoãn ấy thực chất là nỗi sợ hãi tột cùng: sợ bị từ chối, sợ cô độc, sợ bị tước bỏ sự bảo bọc. Bạn đang đóng vai "người làm hài lòng" (People-Pleaser) như một chiến lược sinh tồn hèn nhát để van xin sự an toàn. 
+                        </p>
+                        <p>
+                            Thanh lịch thực sự không sinh ra từ một tâm hồn trống rỗng, nhạt nhòa và vô hại. Nó được trui rèn khi bạn dám nhìn thẳng vào những phần gai góc nhất bên trong mình, gọi tên Bản thể bóng tối (Shadow) và chuyển hóa chúng thành năng lượng hành động sắc lạnh của trí tuệ.
+                        </p>
+                    </div>
+
+                    <!-- Footer trang sách -->
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 4</div>
+                </div>
+            </div>
+
+            <!-- PAGE 5: CHƯƠNG 1 (SHADOW WORK & RANH GIỚI THÉP) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG I: ĐẠI PHẪU TÂM LÝ</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h4 class="text-md font-serif font-bold text-navy-900 uppercase tracking-wider mb-2">Thuần hóa nanh vuốt & Thiết lập ranh giới thép</h4>
+                        <p>
+                            Tích hợp Shadow có nghĩa là bạn đồng hóa năng lượng mạnh mẽ đó vào sự kiểm soát của lý trí. Bạn thừa nhận mình có tham vọng, bạn có nanh vuốt để bảo vệ bản thân khi cần thiết, nhưng bạn lựa chọn sự im lặng, điềm tĩnh và lịch thiệp vì tôn trọng năng lượng của mình.
+                        </p>
+                        <p>
+                            Khi đối diện với sự tấn công tâm lý hoặc ép buộc thỏa hiệp, áp dụng chính xác quy tắc 3 giây im lặng: Dừng lại 3 giây, giữ nguyên cơ mặt, nhìn thẳng vào mắt đối phương và đếm nhẩm 1 - 2 - 3. Khoảng lặng này cắt đứt dòng thao túng của đối phương và chuyển thế chủ động về phía bạn.
+                        </p>
+                        <p>
+                            Hạ giọng trầm điềm tĩnh, nói chậm lại và đặt câu hỏi ngược lịch thiệp: <em>"Câu nói này của chị mang mục đích đóng góp xây dựng hay đang cố ý công kích cá nhân tôi vậy?"</em>. Khi bạn sở hữu ranh giới thép, thế giới buộc phải học cách cư xử tôn trọng trước mặt bạn.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 5</div>
+                </div>
+            </div>
+
+            <!-- PAGE 6: CHƯƠNG 2 (TRIẾT LÝ DÒNG TIỀN) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG II: TRIẾT LÝ DÒNG TIỀN</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h3 class="text-xl font-serif font-bold text-navy-900 tracking-wide text-left mb-4">Bản chất của dòng tiền lệ thuộc & Bản hợp đồng ngầm</h3>
+                        <p>
+                            Một tư duy thức tỉnh không thể tồn tại trong một cái túi rỗng hoặc một cuộc sống dựa dẫm. Hãy nhìn thẳng vào thực tế trần trụi: Tiền của người khác đưa cho bạn luôn đi kèm với những điều khoản ngầm không bao giờ được viết ra giấy.
+                        </p>
+                        <p>
+                            Khi chấp nhận nhận chu cấp để đổi lấy cuộc sống an nhàn ngắn hạn, bạn đã ký hợp đồng cho thuê tự do cá nhân, quyền tự quyết và tiếng nói của mình. Người đưa tiền nắm quyền định đoạt giá trị của bạn. Hôm nay nâng bạn lên như đóa hoa, ngày mai giẫm nát lòng tự trọng vì họ biết rõ: bạn không có nơi nào khác để đi.
+                        </p>
+                        <p>
+                            Thanh lịch không thể tồn tại trong một cái túi rỗng. Sự phụ thuộc biến bạn thành một kẻ ký sinh mang danh quý phái. Để có được sự kiêu hãnh, bước đầu tiên là phải độc lập tuyệt đối về mặt tài chính thông qua tri thức cốt lõi.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 6</div>
+                </div>
+            </div>
+
+            <!-- PAGE 7: CHƯƠNG 2 (CÔNG THỨC FAI & PHÂN BỔ) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG II: TRIẾT LÝ DÒNG TIỀN</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-5 leading-relaxed text-sm font-content">
+                        <h4 class="text-md font-serif font-bold text-navy-900 uppercase tracking-wider mb-2">Thang đo bản thể: Chỉ số tự chủ tài chính</h4>
+                        <p class="text-justify">
+                            Sự kiêu hãnh của người phụ nữ định mẫu Sophia được xây dựng trên những con số thực tế. Bạn cần tính toán chỉ số FAI của mình:
+                        </p>
+                        
+                        <!-- Công thức toán học trực quan -->
+                        <div class="bg-navy-900 text-gold-200 p-4 rounded-lg my-3 text-center font-serif text-sm">
+                            $$\mathbf{FAI = \frac{Thu\ Nhập\ Tự\ Chủ\ (Tự\ Tạo\ Ra)}{Tổng\ Nhu\ Cầu\ Tài\ Chính\ Thực\ Tế}}$$
+                        </div>
+
+                        <ul class="space-y-2 text-xs font-sans">
+                            <li><strong class="text-navy-950">FAI &lt; 0.5 (Bản thể Phụ thuộc):</strong> Bạn chưa có quyền nói "Không" tuyệt đối.</li>
+                            <li><strong class="text-navy-950">0.5 &le; FAI &lt; 1.0 (Bản thể Đang thức tỉnh):</strong> Có năng lực tự thân nhưng chưa vững chắc.</li>
+                            <li><strong class="text-navy-950">FAI &ge; 1.0 (Bản thể Tự chủ - Sophia):</strong> Độc lập và sở hữu quyền tự quyết tối thượng.</li>
+                        </ul>
+
+                        <p class="text-justify text-xs text-stone-500 italic mt-2">
+                            * Phân bổ dòng tiền theo Tỷ lệ vàng Sophia: 30% Đầu tư bản thân, 15% Quỹ Thẩm mỹ phom đứng, 40% Chi tiêu thiết yếu, 15% Quỹ dự phòng tự lập khẩn cấp.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 7</div>
+                </div>
+            </div>
+
+            <!-- PAGE 8: CHƯƠNG 3 (TRÍ TUỆ BẬC CAO) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG III: TRÍ TUỆ BẬC CAO</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h3 class="text-xl font-serif font-bold text-navy-900 tracking-wide text-left mb-4">Chiến lược tư duy: Bạn là một doanh nghiệp giá trị</h3>
+                        <p>
+                            Một người phụ nữ thông tuệ không nhìn nhận cuộc sống qua lăng kính tiêu hao, cô ấy nhìn mọi thứ qua lăng kính của nhà đầu tư giá trị (ROI). Mọi phút giây trôi qua, mọi mối quan hệ bạn dung nạp đều là dòng vốn năng lượng được tung ra thị trường.
+                        </p>
+                        <p>
+                            Hãy tự hỏi: <em>Dòng vốn này đang mang lại tỷ suất sinh lời thế nào cho cuộc đời tôi?</em> Dành 2 tiếng để lướt tin tức tiêu cực hay buôn chuyện vô bổ mang lại tỷ suất ROI âm. Trái lại, dành thời gian học ngoại ngữ chuyên ngành cao cấp, tối ưu hóa công việc mang lại giá trị thặng dư lâu dài cho tương lai.
+                        </p>
+                        <p>
+                            Bằng cách thiết lập hệ quy chiếu này, bạn thanh lọc hoàn toàn các hành vi lãng phí thời gian, loại bỏ các mối quan hệ độc hại làm suy giảm vốn năng lượng, và liên tục tích lũy tài sản vô hình có khả năng sinh lời cao nhất.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 8</div>
+                </div>
+            </div>
+
+            <!-- PAGE 9: CHƯƠNG 3 (HỆ THỐNG TỰ ĐỘNG HÓA TƯ DUY) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG III: TRÍ TUỆ BẬC CAO</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content">
+                        <h4 class="text-md font-serif font-bold text-navy-900 uppercase tracking-wider mb-2">Hệ thống tự động hóa tư duy từ dữ liệu (Logic IF/THEN)</h4>
+                        <p>
+                            Cảm xúc là kẻ thù lớn nhất của sự tự chủ. Để loại bỏ hoàn toàn sự nhiễu loạn này, bạn cần cài đặt sẵn các thuật toán logic nghiêm ngặt cho phản ứng của chính mình:
+                        </p>
+                        
+                        <!-- Khối Code Logic IF/THEN -->
+                        <div class="bg-stone-900 text-stone-300 p-4 rounded font-mono text-xs space-y-3 border border-gold-300/10">
+                            <div>
+                                <span class="text-gold-200">IF:</span> Đối phương chạm vào ranh giới đỏ (Vô lễ với thời gian, hạ thấp lòng tự trọng của bạn)
+                                <br><span class="text-gold-200">THEN:</span> Hệ thống tự động chuyển dữ liệu của họ vào danh sách BLOCK, cắt đứt năng lượng tiêu hao.
+                            </div>
+                            <div class="border-t border-stone-800 pt-2">
+                                <span class="text-gold-200">IF:</span> Một khoản chi tiêu không có mã định danh quỹ rõ ràng
+                                <br><span class="text-gold-200">THEN:</span> Hệ thống lý trí từ chối xuất toán, không cho phép tiêu tiền.
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-stone-500 italic mt-2">
+                            Lợi ích: Bạn không mất thời gian phân vân, đắn đo hay đấu tranh tư tưởng trước các cám dỗ cảm xúc ngắn hạn. Mọi quyết định đều được tự động hóa dựa trên bộ quy chuẩn nhất quán.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 9</div>
+                </div>
+            </div>
+
+            <!-- PAGE 10: CHƯƠNG 4 (KẾT GIAO TINH HOA) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG IV: KẾT GIAO TINH HOA</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h3 class="text-xl font-serif font-bold text-navy-900 tracking-wide text-left mb-4">Đập tan tư duy "Social Climbing" hời hợt</h3>
+                        <p>
+                            Nhiều người lầm tưởng việc chụp ảnh tại các nơi sang chảnh hay nịnh nọt để xin liên hệ của người thành đạt là bước vào giới tinh hoa. Đó là ảo tưởng ngây thơ. Bản chất của tầng lớp tinh hoa là sự trao đổi giá trị tương xứng dựa trên năng lực cốt lõi. Giới tinh hoa không kết giao với kẻ đi cầu xin cơ hội, họ chỉ hợp tác với đối tác ngang hàng.
+                        </p>
+                        <p>
+                            Để đối thoại ngang hàng với người có quyền lực lớn, hãy áp dụng kỹ thuật "Bình đẳng tĩnh lặng":
+                        </p>
+                        <p>
+                            Một, thanh lọc ngôn từ: Loại bỏ các từ đệm mang tính yếu thế như <em>"em nghĩ là", "nếu được thì"</em>. Thay bằng ngôn từ khẳng định: <em>"Quan điểm của tôi là", "Dựa trên dữ liệu thực tế cho thấy"</em>. Hai, phong thái tích hợp bóng tối: Giữ khoảng cách lịch thiệp, không vồn vã, tập trung nhìn thẳng mắt và lắng nghe sâu sắc, tuyệt đối không gật đầu liên tục như một chiếc máy.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 10</div>
+                </div>
+            </div>
+
+            <!-- PAGE 11: CHƯƠNG 4 (ĐỊNH VỊ CHIẾN LƯỢC) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG IV: KẾT GIAO TINH HOA</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h4 class="text-md font-serif font-bold text-navy-900 uppercase tracking-wider mb-2">Định vị chiến lược trong mạng lưới giá trị</h4>
+                        <p>
+                            Thương hiệu cá nhân của bạn không được xây dựng bằng những chiêu trò truyền thông hời hợt, mà nằm ở sự chỉn chu tuyệt đối và tính nhất quán lâu dài. Nhất quán trong ranh giới để vòng tròn xung quanh biết rõ những giới hạn bạn không bao giờ thỏa hiệp. Một người phụ nữ có ranh giới rõ ràng luôn được đánh giá cao hơn kẻ dễ dãi.
+                        </p>
+                        <p>
+                            Hãy liên tục mài giũa giá trị chuyên môn cốt lõi đạt đến độ chín muồi và không thể thay thế. Khi năng lực xử lý vấn đề của bạn thực sự xuất sắc, mạng lưới tinh hoa sẽ tự động định vị bạn như một đối tác có sức ảnh hưởng và chủ động tìm đến bạn để thiết lập sự đồng hành, hợp tác.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 11</div>
+                </div>
+            </div>
+
+            <!-- PAGE 12: CHƯƠNG 5 (THẨM MỸ KIÊU HÃNH) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG V: THẨM MỸ KIÊU HÃNH</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h3 class="text-xl font-serif font-bold text-navy-900 tracking-wide text-left mb-4">Triết lý "Capsule Wardrobe" đứng phom</h3>
+                        <p>
+                            Sự thức tỉnh trong tư duy luôn phản chiếu trực tiếp lên cách bạn đối xử với cơ thể mình. Thẩm mỹ của sự kiêu hãnh không nằm ở trang phục cắt xẻ táo bạo, cũng không nằm ở việc đắp lên người logo hàng hiệu vô tội vạ.
+                        </p>
+                        <p>
+                            Nó là sự chắt lọc nghiêm ngặt của lý trí qua triết lý Tủ đồ tối giản cao cấp. Hãy đầu tư vào những món đồ có phom dáng đứng đắn, đường may sắc sảo và chất liệu bền vững như vải tweed, lụa tự nhiên, dạ cao cấp với bảng màu trung tính cổ điển: đen, trắng, kem, xanh rêu trầm, xanh navy.
+                        </p>
+                        <p>
+                            Phom dáng đứng đắn của trang phục phản chiếu trực quan tư duy kỷ luật, cấu trúc và ranh giới rõ ràng. Bạn mặc đẹp không phải để quyến rũ ai, mà để khẳng định chủ quyền đối với cơ thể và cuộc đời chính mình.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 12</div>
+                </div>
+            </div>
+
+            <!-- PAGE 13: CHƯƠNG 5 (PHONG THÁI TĨNH LẶNG CHỦ ĐỘNG) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="flex justify-between items-center border-b border-stone-200 pb-2 text-[10px] tracking-wider text-stone-400 font-sans">
+                        <span>CHƯƠNG V: THẨM MỸ KIÊU HÃNH</span>
+                        <span class="text-gold-400">SOPHIA</span>
+                    </div>
+
+                    <!-- Nội dung chữ -->
+                    <div class="my-auto space-y-6 text-justify leading-relaxed text-sm font-content" contenteditable="true">
+                        <h4 class="text-md font-serif font-bold text-navy-900 uppercase tracking-wider mb-2">Phong thái tĩnh lặng chủ động làm chủ không gian</h4>
+                        <p>
+                            Vũ khí tối thượng của người phụ nữ thanh lịch không nằm ở sự ồn ào. Kẻ yếu thế cố nói thật to để chứng minh sự tồn tại. Người có giá trị cao làm chủ không gian bằng sự tĩnh lặng và ba kỹ thuật kiểm soát năng lượng cơ thể:
+                        </p>
+                        <p>
+                            Một, dáng đứng trục thẳng: Bờ vai mở rộng thả lỏng, cằm song song mặt đất, bước đi chậm rãi và vững chãi. Hai, làm chủ khoảng lặng: Khi giao tiếp, cố ý ngắt nghỉ có chủ đích để tạo độ ngân quyền lực, buộc người nghe phải tập trung tâm trí chờ đợi lời tiếp theo của bạn. Ba, ánh mắt kiên định: Tập trung ánh mắt vào người đối diện, không nhìn láo liên hay nhìn xuống đất tự ti.
+                        </p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 13</div>
+                </div>
+            </div>
+
+            <!-- PAGE 14: LỜI KẾT (SỰ TÁI SINH CỦA PHƯỢNG HOÀNG) -->
+            <div class="a4-page bg-ivory-100 text-navy-900 border border-gold-300/20" style="--page-bg: #FAF6F0;" data-theme="light">
+                <div class="h-full flex flex-col justify-between py-16 px-12">
+                    <div class="text-xs tracking-[0.2em] text-gold-400 font-serif">LỜI KẾT</div>
+
+                    <div class="my-auto space-y-6 text-center max-w-md mx-auto">
+                        <h3 class="text-2xl font-serif tracking-widest uppercase text-navy-900">Sự tái sinh của Phượng hoàng</h3>
+                        <div class="w-12 h-[1px] bg-gold-300 mx-auto my-4"></div>
+                        <div class="text-sm font-serif italic leading-relaxed text-stone-700 text-justify space-y-4" contenteditable="true">
+                            <p>
+                                Hành trình bóc trần bản thể bóng tối, đập tan tư duy ký sinh để tái cấu trúc bản thể kiêu hãnh đầy đớn đau và cô độc. Nhưng phần thưởng cuối cùng hoàn toàn xứng đáng: đó là một bản thể tự chủ tuyệt đối, kiêu hãnh, không bao giờ bị thao túng bởi cảm xúc ngắn hạn hay thế lực bên ngoài.
+                            </p>
+                            <p>
+                                Hãy hành động ngay bây giờ. Đối diện thẳng thắn với những con số tài chính thực tế, ghi chép nhật ký bằng sự tỉnh thức và kiên quyết thiết lập ranh giới thép. Bạn sở hữu đầy đủ nanh vuốt và sự sắc bén để kiến tạo vương quốc tự do của riêng mình.
+                            </p>
+                        </div>
+                        <p class="text-xs tracking-[0.2em] text-gold-400 font-sans uppercase font-bold mt-6" contenteditable="true">Sophia. Kiêu hãnh... và tự lập.</p>
+                    </div>
+
+                    <div class="text-[9px] tracking-widest text-stone-400 text-center font-sans">TRANG 14</div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- JAVASCRIPT ĐIỀU KHIỂN ĐỘNG -->
+    <script>
+        let currentFontSize = 14;
+        let isEditMode = false;
+
+        // Cập nhật giao diện khi khởi động
+        window.onload = function() {
+            // Khởi tạo LaTeX hiển thị (nếu có thư viện, ở đây dùng định dạng trực quan)
+            setTheme('ivory');
+            setFont('serif');
+        };
+
+        // Hàm thay đổi màu giấy
+        function setTheme(theme) {
+            const pages = document.querySelectorAll('.a4-page');
+            pages.forEach(page => {
+                // Giữ nguyên màu tối cho trang bìa (trang đầu tiên) để giống ảnh mẫu
+                if (page === pages[0]) return;
+
+                if (theme === 'ivory') {
+                    page.style.backgroundColor = '#FAF6F0';
+                    page.style.color = '#0F172A';
+                    page.style.setProperty('--page-bg', '#FAF6F0');
+                    page.classList.remove('text-stone-200');
+                    page.classList.add('text-navy-900');
+                    page.style.borderColor = 'rgba(197, 168, 128, 0.2)';
+                } else if (theme === 'charcoal') {
+                    page.style.backgroundColor = '#1C1917';
+                    page.style.color = '#E7E5E4';
+                    page.style.setProperty('--page-bg', '#1C1917');
+                    page.classList.remove('text-navy-900');
+                    page.classList.add('text-stone-200');
+                    page.style.borderColor = 'rgba(197, 168, 128, 0.1)';
+                } else if (theme === 'white') {
+                    page.style.backgroundColor = '#FFFFFF';
+                    page.style.color = '#000000';
+                    page.style.setProperty('--page-bg', '#FFFFFF');
+                    page.classList.remove('text-stone-200');
+                    page.classList.add('text-navy-900');
+                    page.style.borderColor = '#D1D5DB';
+                }
+            });
+        }
+
+        // Hàm thay đổi Font chữ
+        function setFont(fontFamily) {
+            const contentElements = document.querySelectorAll('.font-content');
+            contentElements.forEach(el => {
+                if (fontFamily === 'serif') {
+                    el.style.fontFamily = "'Cormorant Garamond', 'Playfair Display', serif";
+                } else {
+                    el.style.fontFamily = "'Montserrat', 'Inter', sans-serif";
+                }
+            });
+        }
+
+        // Thay đổi kích thước chữ
+        function changeFontSize(direction) {
+            currentFontSize += direction;
+            if (currentFontSize < 11) currentFontSize = 11;
+            if (currentFontSize > 20) currentFontSize = 20;
+
+            const contentElements = document.querySelectorAll('.font-content');
+            contentElements.forEach(el => {
+                el.style.fontSize = currentFontSize + 'px';
+            });
+
+            document.getElementById('font-size-indicator').innerText = currentFontSize + 'px';
+        }
+
+        // Bật/tắt chế độ biên tập trực tiếp
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const editableElements = document.querySelectorAll('[contenteditable]');
+            const toggleButton = document.getElementById('edit-toggle');
+
+            editableElements.forEach(el => {
+                el.setAttribute('contenteditable', isEditMode ? 'true' : 'false');
+            });
+
+            if (isEditMode) {
+                toggleButton.innerText = "Đang Biên Tập";
+                toggleButton.classList.remove('bg-red-950/40', 'border-red-500/30', 'text-red-300');
+                toggleButton.classList.add('bg-emerald-950/40', 'border-emerald-500/30', 'text-emerald-300');
+            } else {
+                toggleButton.innerText = "Tắt biên tập";
+                toggleButton.classList.remove('bg-emerald-950/40', 'border-emerald-500/30', 'text-emerald-300');
+                toggleButton.classList.add('bg-red-950/40', 'border-red-500/30', 'text-red-300');
+            }
+        }
+    </script>
+
+</body>
+</html>
+
+```
